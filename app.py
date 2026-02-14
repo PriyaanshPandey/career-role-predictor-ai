@@ -5,6 +5,17 @@ import ai_prediction as ai
 import os
 import requests
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # loads .env file
+
+# Now you can safely get variables
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+PORT = int(os.getenv("PORT", 10000))
+
+
 # -----------------------------
 # FastAPI App Setup
 # -----------------------------
