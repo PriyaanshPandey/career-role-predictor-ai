@@ -14,11 +14,10 @@ from sklearn.neural_network import MLPClassifier
 import json
 
 MODEL_PATH = "models/ensemble_models.pkl"
-USER_PROFILE_PATH = "models/user_profiles.json"  # store user self-assessment
+USER_PROFILE_PATH = "models/user_profiles.json" 
 
-# -----------------------------
-# Load / Save User Profiles
-# -----------------------------
+
+
 def load_user_profiles():
     if os.path.exists(USER_PROFILE_PATH):
         with open(USER_PROFILE_PATH, "r") as f:
@@ -30,9 +29,7 @@ def save_user_profiles(profiles):
     with open(USER_PROFILE_PATH, "w") as f:
         json.dump(profiles, f, indent=2)
 
-# -----------------------------
-# Data & Model Functions
-# -----------------------------
+
 def load_data():
     df = pd.read_csv("dataset.csv")
     X = df.drop("role", axis=1)
@@ -96,9 +93,7 @@ def load_models():
 models, encoder = load_models()
 user_profiles = load_user_profiles()
 
-# -----------------------------
-# Prediction Function
-# -----------------------------
+
 def predict(input_data: dict, user_id: str = None):
     """
     Predict top 3 careers based on input_data.
@@ -135,25 +130,21 @@ def predict(input_data: dict, user_id: str = None):
             "confidence": float(round(score, 3))
         })
 
-    # Store self-assessment for personalization if user_id provided
+  
     if user_id:
         user_profiles[user_id] = input_data
         save_user_profiles(user_profiles)
 
     return {"recommendations": recommendations}
 
-# -----------------------------
-# Get User Profile for AI Mentor
-# -----------------------------
+
 def get_user_profile(user_id: str):
     """
     Returns self-assessment scores for a given user_id
     """
     return user_profiles.get(user_id, None)
 
-# -----------------------------
-# Testing
-# -----------------------------
+
 if __name__ == "__main__":
     sample = {
         "logic": 7,
