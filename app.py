@@ -58,7 +58,7 @@ conversation_sessions = {}
 # -----------------------------
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")  # Put your API key in env variable
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
-GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta2/models/{GEMINI_MODEL}:generateText"
+GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 
 
 # -----------------------------
@@ -98,24 +98,32 @@ def ai_mentor(data: MentorInput):
     # Build AI prompt
     prompt = f"You are an expert career mentor AI.\n{profile_text}Here is the conversation so far:\n{formatted_history}User: {user_message}\nMentor:"
 
-    headers = {
-        "Authorization": f"Bearer {GEMINI_API_KEY}",
-        "Content-Type": "application/json"
-    }
+    # FIXED: New URL format and payload structure
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+    
     payload = {
-        "prompt": prompt,
-        "temperature": 0.7,
-        "maxOutputTokens": 256
+        "contents": [{
+            "parts": [{
+                "text": prompt
+            }]
+        }],
+        "generationConfig": {
+            "temperature": 0.7,
+            "maxOutputTokens": 256
+        }
     }
 
     try:
-        response = requests.post(GEMINI_API_URL, headers=headers, json=payload, timeout=30)
+        response = requests.post(url, json=payload, timeout=30)
         response.raise_for_status()
         result = response.json()
-        # Official Gemini API returns 'candidates' array
-        reply = result.get("candidates", [{}])[0].get("content", "Sorry, could not generate response.")
+        
+        # FIXED: New response structure
+        reply = result.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "Sorry, could not generate response.")
+        
     except Exception as e:
         print("AI API failed:", e)
+        print("Response text:", getattr(e, 'response', None) and e.response.text)  # Helpful for debugging
         # Fallback response
         reply = "AI mentor is temporarily unavailable. You can still get career recommendations."
 
